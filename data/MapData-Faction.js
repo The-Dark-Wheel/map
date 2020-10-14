@@ -243,6 +243,10 @@ var canonnEd3d_route = {
 		resolvePromise();
 	},
 
+	highlightSystems: [],
+
+
+
 	parseFaction: function (url, resolvePromise) {
 		let fetchDataFromApi = async (url, resolvePromise) => {
 			let response = await fetch(url);
@@ -372,10 +376,24 @@ var canonnEd3d_route = {
 	},
 	formatStations: function (systems) {
 
+		highlights = []
+		hl = getUrlParameter("Highlight");
+		if (hl) {
+			canonnEd3d_route.systemsData.categories["Systems"]["05"] = { name: "Target Systems", color: "00ff00" }
+			hl.split(",").forEach(function (s) {
+				highlights[s] = true
+			})
+		}
+
+
 		systems.forEach(function (system) {
 
 			poiSite = []
-			poiSite['cat'] = ['04'];
+			if (highlights[system.name]) {
+				poiSite['cat'] = ['05'];
+			} else {
+				poiSite['cat'] = ['04'];
+			}
 			poiSite['name'] = system.name
 			stations = system.stations.split(',')
 
@@ -423,7 +441,6 @@ var canonnEd3d_route = {
 			console.log("getting station data")
 		});
 
-
 		Promise.all([p1, p2]).then(function () {
 			homeSystem = getUrlParameter("homeSystem");
 			if (!homeSystem) {
@@ -433,6 +450,7 @@ var canonnEd3d_route = {
 			canonnEd3d_route.formatStations(canonnEd3d_route.stationData)
 
 			console.log(canonnEd3d_route.camerapos)
+			console.log(canonnEd3d_route.highlightSystems)
 
 			document.getElementById("loading").style.display = "none";
 			Ed3d.init({
